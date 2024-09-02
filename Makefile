@@ -385,7 +385,7 @@ INC_PATHS = $(addprefix -I,$(IPATH))
 .PHONY: all clean flash flash-dfu flash-sd flash-mbr dfu-flash sd mbr gdbflash gdb
 
 # default target to build
-all: $(BUILD)/$(OUT_NAME).out $(BUILD)/$(OUT_NAME)_nosd.hex $(BUILD)/update-$(OUT_NAME)_nosd.uf2 $(BUILD)/$(MERGED_FILE).hex $(BUILD)/$(MERGED_FILE).zip
+all: $(BUILD)/$(OUT_NAME).out $(BUILD)/$(OUT_NAME)_nosd.hex $(BUILD)/$(OUT_NAME)_nosd.elf $(BUILD)/update-$(OUT_NAME)_nosd.uf2 $(BUILD)/$(MERGED_FILE).hex $(BUILD)/$(MERGED_FILE).zip
 
 # Print out the value of a make variable.
 # https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
@@ -434,6 +434,11 @@ $(BUILD)/$(OUT_NAME)_nosd.hex: $(BUILD)/$(OUT_NAME).hex
 	@echo Create $(notdir $@)
 	@python3 tools/hexmerge.py --overlap=replace -o $@ $< $(MBR_HEX)
 
+# Elf file with mbr (still no SD)
+$(BUILD)/$(OUT_NAME)_nosd.elf: $(BUILD)/$(OUT_NAME).out
+	@echo "Copying and renaming $(notdir $<) to $(notdir $@)"
+	@$(OBJCOPY) $< $@
+
 # Bootolader self-update uf2
 $(BUILD)/update-$(OUT_NAME)_nosd.uf2: $(BUILD)/$(OUT_NAME)_nosd.hex
 	@echo Create $(notdir $@)
@@ -456,6 +461,8 @@ copy-artifact: $(BIN)
 	@$(CP) $(BUILD)/update-$(OUT_NAME)_nosd.uf2 $(BIN)
 	@$(CP) $(BUILD)/$(MERGED_FILE).hex $(BIN)
 	@$(CP) $(BUILD)/$(MERGED_FILE).zip $(BIN)
+
+	
 
 #--------------------------------------
 # Flash Target
