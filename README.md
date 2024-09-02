@@ -202,3 +202,12 @@ pip install intelhex
 
 Make sure that `nrfjprog` is available from the command-line. This binary is
 part of Nordic's nRF5x Command Line Tools.
+
+
+## Windows required installations
+
+Install gcc-arm-none-eaby from the ARM website: https://developer.arm.com/downloads/-/gnu-rm
+
+Install make using Chocolately: `choco install make`
+
+If you don't have installed Chocolately, refer to this website: https://chocolatey.org/install
