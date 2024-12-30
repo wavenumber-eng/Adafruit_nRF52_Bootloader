@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef _SPARKFUN_NRF52840_MICROMOD_H_
-#define _SPARKFUN_NRF52840_MICROMOD_H_
+#ifndef _CRICKET_NODE_A_H
+#define _CRICKET_NODE_A_H
 
 #define _PINNUM(port, pin)    ((port)*32 + (pin))
 
@@ -42,6 +42,10 @@
 #define BUTTON_1              _PINNUM(0, 7)
 #define BUTTON_2              _PINNUM(0, 10)
 #define BUTTON_PULL           NRF_GPIO_PIN_PULLUP
+
+
+
+#define MAGIC_UF2_ONLY
 
 //--------------------------------------------------------------------+
 // BLE OTA

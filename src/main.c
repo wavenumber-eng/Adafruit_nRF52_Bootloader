@@ -236,8 +236,14 @@ static void check_dfu_mode(void) {
   bool const reason_reset_pin = (NRF_POWER->RESETREAS & POWER_RESETREAS_RESETPIN_Msk) ? true : false;
 
   // start either serial, uf2 or ble
+
+  #ifdef  MAGIC_UF2_ONLY
+  bool dfu_start = uf2_dfu;
+                  
+  #else
   bool dfu_start = _ota_dfu || serial_only_dfu || uf2_dfu ||
                    (((*dbl_reset_mem) == DFU_DBL_RESET_MAGIC) && reason_reset_pin);
+  #endif
 
   // Clear GPREGRET if it is our values
   if (dfu_start || dfu_skip) NRF_POWER->GPREGRET = 0;
@@ -247,15 +253,27 @@ static void check_dfu_mode(void) {
 
   /*------------- Determine DFU mode (Serial, OTA, FRESET or normal) -------------*/
   // DFU button pressed
-  dfu_start = dfu_start || button_pressed(BUTTON_DFU);
+
+  #ifdef MAGIC_UF2_ONLY
+
+  #else
+   dfu_start = dfu_start || button_pressed(BUTTON_DFU);
 
   // DFU + FRESET are pressed --> OTA
   _ota_dfu = _ota_dfu || (button_pressed(BUTTON_DFU) && button_pressed(BUTTON_FRESET));
+  #endif
 
   bool const valid_app = bootloader_app_is_valid();
   bool const just_start_app = valid_app && !dfu_start && (*dbl_reset_mem) == DFU_DBL_RESET_APP;
 
+
+  #ifdef MAGIC_UF2_ONLY
+  (void)just_start_app;
+  (void)reason_reset_pin;
+  #else
   if (!just_start_app && APP_ASKS_FOR_SINGLE_TAP_RESET()) dfu_start = 1;
+
+
 
   // App mode: Double Reset detection or DFU startup for nrf52832
   if (!(just_start_app || dfu_start || !valid_app)) {
@@ -283,6 +301,8 @@ static void check_dfu_mode(void) {
   } else {
     (*dbl_reset_mem) = 0;
   }
+  #endif
+
 
   // Enter DFU mode accordingly to input
   if (dfu_start || !valid_app) {
@@ -302,7 +322,7 @@ static void check_dfu_mode(void) {
       bootloader_dfu_start(_ota_dfu, 3000, true);
     } else {
       // No timeout if bootloader requires user action (double-reset).
-      bootloader_dfu_start(_ota_dfu, 0, false);
+      bootloader_dfu_start(_ota_dfu, 10000, false);
     }
 
     if (_ota_dfu) {
