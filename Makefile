@@ -385,7 +385,7 @@ INC_PATHS = $(addprefix -I,$(IPATH))
 .PHONY: all clean flash flash-dfu flash-sd flash-mbr dfu-flash sd mbr gdbflash gdb
 
 # default target to build
-all: $(BUILD)/$(OUT_NAME).out $(BUILD)/$(OUT_NAME)_nosd.hex $(BUILD)/$(OUT_NAME)_nosd.elf $(BUILD)/update-$(OUT_NAME)_nosd.uf2 $(BUILD)/$(MERGED_FILE).hex $(BUILD)/$(MERGED_FILE).zip
+all: $(BUILD)/$(OUT_NAME).out $(BUILD)/$(OUT_NAME)_nosd.hex $(BUILD)/$(OUT_NAME)_nosd.elf $(BUILD)/update-$(OUT_NAME)_nosd.uf2 $(BUILD)/$(MERGED_FILE).hex 
 
 # Print out the value of a make variable.
 # https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
@@ -432,7 +432,7 @@ $(BUILD)/$(OUT_NAME).hex: $(BUILD)/$(OUT_NAME).out
 # Hex file with mbr (still no SD)
 $(BUILD)/$(OUT_NAME)_nosd.hex: $(BUILD)/$(OUT_NAME).hex
 	@echo Create $(notdir $@)
-	@python3 tools/hexmerge.py --overlap=replace -o $@ $< $(MBR_HEX)
+	@python tools/hexmerge.py --overlap=replace -o $@ $< $(MBR_HEX)
 
 # Elf file with mbr (still no SD)
 $(BUILD)/$(OUT_NAME)_nosd.elf: $(BUILD)/$(OUT_NAME).out
@@ -442,12 +442,12 @@ $(BUILD)/$(OUT_NAME)_nosd.elf: $(BUILD)/$(OUT_NAME).out
 # Bootolader self-update uf2
 $(BUILD)/update-$(OUT_NAME)_nosd.uf2: $(BUILD)/$(OUT_NAME)_nosd.hex
 	@echo Create $(notdir $@)
-	@python3 lib/uf2/utils/uf2conv.py -f $(UF2_FAMILY_ID_BOOTLOADER) -c -o $@ $^
+	@python lib/uf2/utils/uf2conv.py -f $(UF2_FAMILY_ID_BOOTLOADER) -c -o $@ $^
 
 # merge bootloader and sd hex together
 $(BUILD)/$(MERGED_FILE).hex: $(BUILD)/$(OUT_NAME).hex
 	@echo Create $(notdir $@)
-	@python3 tools/hexmerge.py -o $@ $< $(SD_HEX)
+	@python tools/hexmerge.py -o $@ $< $(SD_HEX)
 
 # Create pkg zip file for bootloader+SD combo to use with DFU CDC
 $(BUILD)/$(MERGED_FILE).zip: $(BUILD)/$(OUT_NAME).hex
