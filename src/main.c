@@ -237,13 +237,9 @@ static void check_dfu_mode(void) {
 
   // start either serial, uf2 or ble
 
-  #ifdef  MAGIC_UF2_ONLY
-  bool dfu_start = uf2_dfu;
-                  
-  #else
+
   bool dfu_start = _ota_dfu || serial_only_dfu || uf2_dfu ||
                    (((*dbl_reset_mem) == DFU_DBL_RESET_MAGIC) && reason_reset_pin);
-  #endif
 
   // Clear GPREGRET if it is our values
   if (dfu_start || dfu_skip) NRF_POWER->GPREGRET = 0;
@@ -254,7 +250,9 @@ static void check_dfu_mode(void) {
   /*------------- Determine DFU mode (Serial, OTA, FRESET or normal) -------------*/
   // DFU button pressed
 
-  #ifdef MAGIC_UF2_ONLY
+  #ifdef SKIP_BUTTON_CHECK
+sdfds
+   dfu_start = dfu_start
 
   #else
    dfu_start = dfu_start || button_pressed(BUTTON_DFU);
@@ -267,10 +265,7 @@ static void check_dfu_mode(void) {
   bool const just_start_app = valid_app && !dfu_start && (*dbl_reset_mem) == DFU_DBL_RESET_APP;
 
 
-  #ifdef MAGIC_UF2_ONLY
-  (void)just_start_app;
-  (void)reason_reset_pin;
-  #else
+
   if (!just_start_app && APP_ASKS_FOR_SINGLE_TAP_RESET()) dfu_start = 1;
 
 
@@ -301,7 +296,7 @@ static void check_dfu_mode(void) {
   } else {
     (*dbl_reset_mem) = 0;
   }
-  #endif
+
 
 
   // Enter DFU mode accordingly to input
@@ -319,10 +314,10 @@ static void check_dfu_mode(void) {
     // Initiate an update of the firmware.
     if (APP_ASKS_FOR_SINGLE_TAP_RESET() || uf2_dfu || serial_only_dfu) {
       // If USB is not enumerated in 3s (eg. because we're running on battery), we restart into app.
-      bootloader_dfu_start(_ota_dfu, 3000, true);
+      bootloader_dfu_start(_ota_dfu, 4000, true);
     } else {
       // No timeout if bootloader requires user action (double-reset).
-      bootloader_dfu_start(_ota_dfu, 10000, false);
+      bootloader_dfu_start(_ota_dfu, 4000, true);
     }
 
     if (_ota_dfu) {
